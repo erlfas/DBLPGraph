@@ -12,9 +12,9 @@ import org.neo4j.graphdb.Transaction;
  */
 public class CSV2ToGraph {
     
-    private static GraphDatabaseService DB = DbFactory.getInstance();
-    
     public static void main(String[] args) {
+        
+        GraphDatabaseService DB = DbFactory.getInstance();
         
         try (Transaction tx = DB.beginTx()) {
             DB.execute("CREATE INDEX ON :Author(name)");
@@ -43,26 +43,26 @@ public class CSV2ToGraph {
                 cypher.append("USING PERIODIC COMMIT")
                         .append(" LOAD CSV WITH HEADERS FROM '")
                         .append("file://")
-                        .append(file.toString()).append("'")
+                        .append(file.toString())
+                        .append("'")
                         .append(" AS csvLine")
                         .append(" FIELDTERMINATOR '*'")
                         .append(" MERGE (author:Author {name : csvLine.author})")
                         .append(" MERGE (publication:Publication {title : csvLine.title})")
-                        .append(" CREATE (author)-[:WROTE]->(publication)");
-                
-                System.out.println("CYPHER = " + cypher.toString());
+                        .append(" CREATE (author)-[:IS_AUTHOR_OF]->(publication)");
                 
                 try {
-                    
-                } catch (QueryExecutionException e) {
                     DB.execute(cypher.toString());
+                } catch (Exception e) {
+                    System.out.println(e);
                 }
-                
             }
             
         } catch (Exception e) {
             System.out.println(e);
         }
+        
+        DB.shutdown();
         
     }
     
